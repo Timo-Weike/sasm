@@ -2,14 +2,18 @@
 
 ## Interger instructions:
 
- * `add<width> <op>, <op>`
- * `sub<width> <op>, <op>`
- * `mul<width> <op>, <op>`
- * `div<width> <op>, <op>`
  * `inc<width> <op>`
  * `dec<width> <op>`
- 
- `ToDo - unsigned and signed mul/div`
+ * `add<width> <op1>, <op2>`
+ * `sub<width> <op1>, <op2>`
+ * `mul<width> <op1>, <op2>`
+ * `div<width> <op1>, <op2>`
+ * `mod<width> <op1>, <op2>`
+ * `divMod<width> <op1>, <op2>, <op3>` - `<op1> := <op1> / <op3>, <op2> := <op1> mod <op3>`
+ * `umul<width> <op1>, <op2>`
+ * `udiv<width> <op1>, <op2>`
+ * `umod<width> <op1>, <op2>`
+ * `udivMod<width> <op1>, <op2>, <op3>`
  
 So for example `add8 r1_8 r2_8` is the instruction to add the value for `r2_8` to the value stored in `r1_8` and it will be stored in the register `r1_8`.
 
