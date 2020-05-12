@@ -33,17 +33,15 @@ Valid value for `width` are `8, 16, 32, 64`.
  
  ## Load/Store instructions
  
- Many assambler languages have a `mov` instruction that is used to move value between registers and the memory.
- That sometimes leaves room for human misinterpretation. So we decided to have two distinct instruction to _load_ a value to a register and _store_ instruction to write a value to the memory.
- 
-  * `load <reg>, <op>` here `<op>` - can be an addressing of memory or another register. For example `load r1_16, [r2+19]` loads 16 bit from the address `r2+19` into the register `r1_16` and `load r2_8, r3_8` loads the value from the register `r3_8` into the register `r2_8`.
-  * `store<width> <addr>, <op>` - here the `width` can be ommited if the second operand is an register. For example `store [r1], r2` writes the value in `r2` to the memory address stored in `r1` and `store32 [r4], [r4+4]` writes 32 begining by `r4+4` to the memory location `r4`.
+  * `mov<width> <op1>, <op2>`
 
 There is also `copy` instruction that can copy more than 8 byte of data around.
 
  * `copy <reg>, <addr>, <addr>`
  
 The first operand holds the amount of bytes to copy, the second is the base address for the source and the third is the base address for the destination. This instruction might need as much cycels to as bytes to copy to complete.
+
+ * `swap<width> <op1>, <op2>` - swaps the content of the two operands
 
 ## Stack operations
 
