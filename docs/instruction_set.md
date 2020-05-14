@@ -21,6 +21,19 @@ The width can be ommited if the width can be determined by the with of the first
 So `add r1_16, [r2]` would be valid and equal to `add r1_16, [r2]`, but `add [r2], r1_16` would not be valid since it can't be derived how wide first operand should be.
 
 Valid value for `width` are `8, 16, 32, 64`.
+
+## Logic
+
+ * `neg<width> <op>` - negates a two-compilemts number with `width` bits
+ * `not<width> <op>` - inverts each bit
+ * `and<width> <op>` - a bitwise and-operation
+ * `or<width> <op>` - a bitwise or-operation
+ * `xor<width> <op>` - a bitwise xor-operation
+ * `shl<width> <op>, <amount>` - performs a left shift of the operant by `amount` bits. While shifting the most sicnificant bit will be shifted into the `CF` and zeros will be shifted in. So if `r1_8 == 0b10100101, CF == ?` after `shl r1_8, 1` would hold `r1_8 == 0b01001010, CF == 1` and after `shl r1_8, 5` would hold `r1_8 == 0b10100000, CF = 0`
+ * `shr<width> <op>, <amount>` - performs a right shift of the operant by `amount` bits. Symetrical to `shl`.
+ 
+The `<amount>` can be an addressing or an register.
+If `amount > width + 1` the operand `<op>` will always be zeros and the `CF` will also always be zero.
  
 ## Float instructions:
 
