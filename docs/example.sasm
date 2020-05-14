@@ -1,0 +1,66 @@
+#define STDOUT 1 //std-out-stream
+//#define STDIN 0 // std-in-stream
+
+// data that can't be changed and has a label
+.static_data:
+    newline:
+        string "\n"
+    message_1:
+        string "hello,"
+    message_2:
+        string "world"
+    EOS:
+        int_8 0
+// labeld data that can be changed
+//.dynamic_data:
+
+// program count
+.code:
+
+.startsection str_len:
+    // expects the address of a null-terminated string in r1
+    // and returns the length of that string in r2
+    push r1
+    
+    mov r2, 0
+    loop_start:
+        cmp [r1 + r2], EOS
+        je loop_end
+        inc r1
+        jmp loop_start
+    loop_end:
+    
+    pop r1
+    
+    ret
+.endsection:
+
+.startsection puts:
+    // writes the string in r1 with an appended newline to the STDOUT
+    push r1
+    push r2
+    
+    call str_len
+    write STDOUT, r2, r1
+    
+    mov r1, newline
+    call str_len
+    write STDOUT, r2, r1
+    
+    pop r2
+    pop r1
+    
+    ret
+.endsection
+
+start:
+    mov r1, message_1
+    call puts
+    
+    mov r1, message_2
+    call puts
+    
+// the output will be
+// hello,
+// world
+// 
