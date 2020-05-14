@@ -1,6 +1,6 @@
 # Instruction Set
 
-## Interger instructions:
+## Integer instructions:
 
  * `inc<width> <op>`
  * `dec<width> <op>`
@@ -148,6 +148,16 @@ This can be used together with jumping instructions to create branching in the c
  
   * `jmp<flag> <label>` - jumps to the label if the flag is set
   * `jmpN<flag> <label>` - jumps to the label if the flag is not set
+  
+## Misc
+
+* `syscall <number>` - this tells the system to call the function assosiated with `number`. Since these mappings varie from system to system it is the responsability of the interpreter or compiler to map them correctly. A table for mappings and which registers will be used by the system function will come in the future.
+* `nop` - does nothing and might be ignored by compilers and interpreters
+* `malloc <op1>, <op2>` - wrapping for the system call that allocates `<op2>` many bytes and stores the address to this memory in `<op1>` on success. On failure `<op1>` will be zero. `<op1>` must either be an _normal_ register (i.e. `r1`, `r2`, ...).
+* `open <op1>, <op2>` - opens a file identified by the string starting at the address `<op2>` and stores the stream_id in `<op1>`. If the file could not be found or not be opend `<op1>` will be a negative value.
+* `read <op1>, <op2>, <op2>` - reads upto `<op2>` bytes from the stream `<op1>` into the memory starting at the address `<op2>`.  The number of read bytes will be stored in `<op2>` and if `<op2>` is zero the stream reach EOS.
+* `write <op1>, <op2>, <op3>`
+* `close <op1>`
  
 # Flags
 
@@ -170,4 +180,4 @@ There are a number of flags
  | div | ? | ± | ± | ± |
  | udiv | ? | ± | ± | 1 |
  
-**More to come**
+
