@@ -1,0 +1,45 @@
+WHITESPACE = _{ " " | NEWLINE}
+
+multi_line_comment = _{ "/*" ~ (!"*/" ~ ANY)* ~ "*/" }
+single_line_comment = @{ "//" ~ (!NEWLINE ~ ANY)* ~ NEWLINE }
+
+COMMENT = _{ multi_line_comment | single_line_comment }
+
+// misc
+labelChar = { ASCII_ALPHANUMERIC | "_" }
+label = @{ labelChar+ ~ ":" }
+
+// string literal
+string = @{ "\"" ~ (raw_string | escape)* ~ "\"" }
+raw_string = @{ (!("\\" | "\"") ~ ANY)+ }
+hex = { '0'..'9' | 'a'..'f' | 'A'..'F' }
+unicode_hex = { hex{1, 6} }
+predefined = { "n" | "r" | "t" | "\\" | "0" | "\"" | "'" }
+byte       = { "x" ~ hex{2} }
+unicode    = { "u" ~ "{" ~ unicode_hex ~ "}" }
+escape     = { "\\" ~ (predefined | byte | unicode) }
+
+// include block
+pathChar = @{ ASCII_ALPHANUMERIC | "." | "_" | "-" }
+pathPart = { pathChar+ | "." | ".." }
+path = @{ pathPart ~ ("/" ~ pathPart)* }
+
+include = { "#include" ~ "\"" ~ path ~ "\"" }
+
+include_block = { include ~ (!NEWLINE ~ include)* }
+
+
+// static_data_block
+static_data_block = { ".static_data:" ~ static_data_declaration ~ (!NEWLINE ~ static_data_declaration)* }
+
+static_string_data = { "string " ~ string }
+
+static_data = {
+    static_string_data
+}
+
+static_data_declaration = { label ~ static_data }
+
+
+// file rule
+file = { SOI ~ include_block? ~ static_data_block? ~ EOI}

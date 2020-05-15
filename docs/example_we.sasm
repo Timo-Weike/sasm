@@ -1,0 +1,11 @@
+#include       "test"
+#include "../test2.csv" // a
+
+// data that can't be changed and has a label
+.static_data:
+    newline:
+        string "\n"
+    message_1:
+        string "hello,"
+    message_2:
+        string "world"
