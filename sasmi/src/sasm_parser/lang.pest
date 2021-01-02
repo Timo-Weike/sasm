@@ -1,0 +1,175 @@
+WHITESPACE = _{ " " | NEWLINE}
+
+multi_line_comment = _{ "/*" ~ (!"*/" ~ ANY)* ~ "*/" }
+single_line_comment = @{ "//" ~ (!NEWLINE ~ ANY)* ~ NEWLINE }
+
+COMMENT = _{ multi_line_comment | single_line_comment }
+
+// misc
+labelChar = { ASCII_ALPHANUMERIC | "_" }
+labelName = @{ labelChar+ }
+label = ${ labelName ~ ":" }
+
+float_bit_width = { "32" | "64" }
+int_bit_width = { "8" | "16" | "32" | "64" }
+
+// string literal
+string = @{ "\"" ~ (raw_string | escape)* ~ "\"" }
+raw_string = @{ (!("\\" | "\"") ~ ANY)+ }
+unicode_hex = { hex_digit{1, 6} }
+predefined = { "n" | "r" | "t" | "\\" | "0" | "\"" | "'" }
+byte       = { "x" ~ hex_digit{2} }
+unicode    = { "u" ~ "{" ~ unicode_hex ~ "}" }
+escape     = { "\\" ~ (predefined | byte | unicode) }
+
+// int literals
+int_lit = @{ ( hex_lit | oct_lit | dec_lit | bin_lit ) }
+hex_lit = @{ "0x" ~ hex_digit ~ (hex_digit | "_")* }
+hex_digit = { dec_digit | 'a'..'f' | 'A'..'F' }
+oct_lit = @{ "0o" ~ oct_digit ~ (oct_digit | "_")* }
+oct_digit = { '0'..'7' }
+bin_lit = @{ "0b" ~ bin_digit ~ (bin_digit | "_")* }
+bin_digit = { '0'..'1' }
+dec_lit = @{ ( "+" | "-" )? ~ udec_lit }
+udec_lit = @{ dec_digit ~ (dec_digit | "_")* }
+dec_digit = { '0'..'9' }
+
+// float literals
+float_lit = @{ 
+    dec_lit ~ ("." ~ udec_lit)? ~ float_exp? 
+    | dec_lit
+}
+float_exp = { ^"e" ~ dec_lit }
+
+// include block
+pathChar = @{ ASCII_ALPHANUMERIC | "." | "_" | "-" }
+pathPart = { pathChar+ | "." | ".." }
+path = @{ pathPart ~ ("/" ~ pathPart)* }
+
+include = { "include " ~ "\"" ~ path ~ "\"" ~ !" " ~ "as" ~ !" " ~ labelName}
+
+include_block = { include ~ (!NEWLINE ~ include)* }
+
+
+// static_data_block
+static_data_block = { 
+    ".static_data:" 
+    ~ static_data_declaration 
+    ~ (!NEWLINE ~ static_data_declaration)* 
+}
+
+static_data_declaration = { label ~ static_data }
+
+static_data = {
+    static_string_data
+    | static_num_data
+    | static_float_data
+}
+
+static_string_data = { "string " ~ string }
+
+static_num_data = { static_num_data_type ~ static_num_data_content }
+static_num_data_type = ${ "i" ~ int_bit_width }
+static_num_data_content = { int_lit | "[" ~ int_lit ~ ("," ~ int_lit)+ ~ "]" }
+
+static_float_data = { static_float_data_type ~ static_float_data_content }
+static_float_data_type = ${ "f" ~ float_bit_width }
+static_float_data_content = { float_lit | "[" ~ float_lit ~ ("," ~ float_lit)+ ~ "]" }
+
+
+// dynamic data block
+dynamic_data_block = { 
+    ".dynamic_data:" 
+    ~ dynamic_data_declaration
+    ~ (!NEWLINE ~ dynamic_data_declaration)*
+}
+
+dynamic_data_declaration = { label ~ dynmic_data }
+
+dynmic_data = {
+    dynamic_data_type
+    //~ !" "
+    ~ udec_lit
+}
+
+dynamic_data_type = ${ "res" ~ int_bit_width }
+
+
+// code block
+code_block = {
+    ".code:"
+    ~ code_run
+}
+
+code_run = {
+    code_element 
+    ~ (!NEWLINE ~ code_element)*
+}
+
+code_element = {
+    label
+    | code_section
+    | instruction
+}
+
+code_section = {
+    ".startsection "
+    ~ label
+    ~ code_run?
+    ~ ".endsection:"
+}
+
+// operands
+register = @{
+    normal_register
+    | special_register
+}
+normal_register = @{ "r" ~ udec_lit }
+special_register = { "ri" | "rs" }
+
+address_base = { register | labelName | int_lit }
+addressing = {
+    "["
+    ~ address_base
+    ~ (
+        "+"
+        ~ (
+            int_lit
+            ~ "*" 
+            ~ register
+            | register
+            ~ "*"
+            ~ int_lit
+        )
+    )?
+    ~ "]"
+}
+
+op = {
+    addressing
+    | register
+}
+
+// instructions
+
+
+instructionHead = ${ instructionName ~ (int_bit_width)? }
+instructionName = @{ ASCII_ALPHA+ }
+
+instruction = {
+    instructionHead
+    ~ (
+        op
+        ~ ("," ~ op)*
+    )?
+}
+
+// file rule
+file = { 
+    SOI 
+    ~ include_block? 
+    ~ static_data_block? 
+    ~ dynamic_data_block?
+    ~ code_block
+    ~ EOI
+}

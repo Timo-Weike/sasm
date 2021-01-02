@@ -3,9 +3,10 @@ extern crate pest;
 extern crate pest_derive;
 
 use pest::Parser;
-use pest::iterators::Pair;
 
-
+mod sasm_parser;
+use sasm_parser::LangParser;
+use sasm_parser::Rule;
 
 use std::fs;
 
@@ -18,52 +19,23 @@ fn main() {
         .next().unwrap(); // get and unwrap the `file` rule; never fails
 
     
-
     for line in file.into_inner() {
         match line.as_rule() {
             Rule::include_block => {
-                parse_include(line);
+                sasm_parser::parse_include(line);
             }
             Rule::static_data_block => {
-                parse_static_data(line);
+                sasm_parser::parse_static_data(line);
+            }
+            Rule::dynamic_data_block => {
+                sasm_parser::parse_dynamic_data(line);
+            }
+            Rule::code_block => {
+                let code = sasm_parser::parse_code_data(line);
+
+                println!("code is {:?}", code);
             }
             _ => {}
         }
     }
 }
-
-fn parse_static_data(static_data_block :Pair<'_, Rule>) {
-    for static_data_declaration in static_data_block.into_inner() {
-        let mut inner = static_data_declaration.into_inner();
-        let label = inner.next().unwrap().as_str();
-        let data = inner.next().unwrap().into_inner().next().unwrap();
-        match data.as_rule() {
-            Rule::static_string_data => {
-                let mut inner = data.into_inner();
-                let string = inner.next().unwrap().as_str();
-                println!("we got string data {} with labelname {:?}", string, label);
-            }
-            _ => {println!("{:?}", data);}
-        }
-    }
-}
-
-fn parse_include(include_block :Pair<'_, Rule>) {
-    for inner in include_block.into_inner() {
-        match inner.as_rule() {
-            Rule::include => {
-                let mut inner_rules = inner.into_inner(); // path
-                let path = inner_rules.next().unwrap().as_str();
-                println!("shall include file: {}", path);
-            }
-            x => {
-                println!("Error, {:?}", x);
-            }
-        }
-    }
-
-}
-
-#[derive(Parser)]
-#[grammar = "lang.pest"]
-pub struct LangParser;

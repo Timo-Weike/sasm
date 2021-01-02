@@ -1,2 +1,2 @@
 language = "rust"
-run = "cargo run --manifest-path sasmi/Cargo.toml"
+run = "export RUST_BACKTRACE=1; cargo run --manifest-path sasmi/Cargo.toml"
